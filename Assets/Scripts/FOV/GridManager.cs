@@ -1,36 +1,66 @@
 using UnityEngine;
 
+[ExecuteAlways]
 public class GridManager : MonoBehaviour
 {
-    public GameObject tilePrefab; // Prefab for the tile object
-    private int gridSize = 2; // Number of tiles in each row/column
-    private float tileSize; // Size of each tile
-    private Vector2 screenDimensions; // Dimensions of the screen
+    public int rows = 4;
+    public  int columns = 4;
+    [SerializeField] private GameObject cellPrefab;
+    [SerializeField] private Transform gridParent;
+    [SerializeField] private Camera mainCamera;
 
-    void Start()
+    private GameObject[,] grid;
+
+    private void Awake()
     {
-        screenDimensions = new Vector2(Screen.width, Screen.height);
-        tileSize = screenDimensions.x / gridSize;
-
-        for (int x = 0; x < gridSize; x++)
+        if (cellPrefab == null || gridParent == null || mainCamera == null)
         {
-            for (int y = 0; y < gridSize; y++)
+            Debug.LogError("GridManager: cellPrefab, mainCamera, and gridParent must be assigned in the Inspector.");
+            return;
+        }
+    }
+
+    public void SpawnGrid()
+    {
+        CreateGrid();
+    }
+
+    private void CreateGrid()
+    {
+        if (grid != null)
+        {
+            foreach (GameObject cell in grid)
             {
-                Vector2 tilePosition = new Vector2(x * tileSize, y * tileSize);
-                GameObject tile = Instantiate(tilePrefab, tilePosition, Quaternion.identity);
-                tile.transform.localScale = new Vector2(tileSize, tileSize);
-
-                // Draw debug lines
-                Vector2 topLeft = new Vector2(x * tileSize, y * tileSize);
-                Vector2 topRight = new Vector2((x + 1) * tileSize, y * tileSize);
-                Vector2 bottomLeft = new Vector2(x * tileSize, (y + 1) * tileSize);
-                Vector2 bottomRight = new Vector2((x + 1) * tileSize, (y + 1) * tileSize);
-
-                Debug.DrawLine(topLeft, topRight, Color.white, Mathf.Infinity);
-                Debug.DrawLine(topRight, bottomRight, Color.white, Mathf.Infinity);
-                Debug.DrawLine(bottomRight, bottomLeft, Color.white, Mathf.Infinity);
-                Debug.DrawLine(bottomLeft, topLeft, Color.white, Mathf.Infinity);
+                DestroyImmediate(cell);
             }
         }
+
+        grid = new GameObject[rows, columns];
+
+        float cameraHeight = mainCamera.orthographicSize * 2;
+        float cameraWidth = cameraHeight * mainCamera.aspect;
+
+        float cellWidth = cameraWidth / columns;
+        float cellHeight = cameraHeight / rows;
+
+        Vector3 bottomLeft = mainCamera.ViewportToWorldPoint(new Vector3(0, 0, mainCamera.nearClipPlane));
+
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                GameObject cell = Instantiate(cellPrefab, gridParent);
+                cell.transform.localScale = new Vector3(cellWidth, cellHeight, 1);
+                cell.transform.position = bottomLeft + new Vector3(j * cellWidth + cellWidth / 2, i * cellHeight + cellHeight / 2, 0);
+                grid[i, j] = cell;
+            }
+        }
+    }
+
+    public void UpdateGridSize(int newRow, int newColumn)
+    {
+        rows = newRow;
+        columns = newColumn;
+        CreateGrid();
     }
 }

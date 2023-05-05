@@ -3,15 +3,17 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Predator
+  - Prey
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Predating
   - Water
   - UI
-  - 
+  - GridCells
   - 
   - 
   - 

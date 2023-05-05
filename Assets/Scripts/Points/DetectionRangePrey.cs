@@ -22,7 +22,6 @@ public class DetectionRangePrey : MonoBehaviour
         {
             Debug.Log(transform.parent.gameObject.name + ": I can see " + other.gameObject.name);
         }
-        Debug.Log("Has collided");
     }
 
 }
